@@ -19,9 +19,9 @@ const redLine = viewer.entities.add({
   },
 });
 /**
- * 绿线 (greenRhumbLine)：贴地形的 Rhumb 航线
- * 数学轨迹：采用 Rhumb 航线（Rhumb Line）。这是一条在地球球面上的直线，不会弯曲，而是沿着南北方向平行移动。
- * 核心特性：arcType: Cesium.ArcType.RHUMB。这意味着这条线不会沿着地球表面弯曲，而是沿着南北方向平行移动。
+ * 绿线 (greenRhumbLine)：贴地形的 Rhumb 航线（等角航线）
+ * 数学轨迹：线段与地球上所有子午线（经线）交角都相等。在二维墨卡托投影地图上它是一条直线，但在 3D 地球上看，它与红线的弯曲方向和弧度是不同的（稍微向南弯曲）。
+ * 核心特性：没有设置贴地，也没有高度数据，因此它会默认贴在地球的椭球体表面（即海平面高度），但不会随 3D 地形起伏。
  * 材质：纯绿色。
  */
 const greenRhumbLine = viewer.entities.add({
@@ -33,7 +33,13 @@ const greenRhumbLine = viewer.entities.add({
     material: Cesium.Color.GREEN,
   },
 });
-
+/**
+ * 发光蓝线 (glowingLine)：带发光特效的普通空间线
+ * 数学轨迹：默认的大圆航线，贴在海平面表面。
+ * 核心特性与材质：使用了 PolylineGlowMaterialProperty。它打破了单调的像素线条，能渲染出一种霓虹灯般的发光效果。
+ * glowPower: 0.2：控制发光的强弱（发光范围和亮度）。
+ * taperPower: 0.5：控制线条从起点到终点是否逐渐变细（渐变效果）。
+ */
 const glowingLine = viewer.entities.add({
   name: "Glowing blue line on the surface",
   polyline: {
@@ -46,7 +52,12 @@ const glowingLine = viewer.entities.add({
     }),
   },
 });
-
+/**
+ * 橙色黑边线 (orangeOutlined)：高空悬浮的轮廓线
+ * 数学轨迹：使用了 fromDegreesArrayHeights，给起点和终点都设置了 250000（25 万米）的高度。它是一条悬浮在大气层中的高空线。
+ * 核心特性：虽然在高空，但它默认依然会顺着地球的球体表面弯曲（大圆航线），而不是直接穿透地球的直线。
+ * 材质：使用了 PolylineOutlineMaterialProperty，可以同时设置主色（橙色）和外边框颜色（黑色）及粗细，非常适合做边界划分，因为带边框的线在任何复杂的背景地图上都很清晰。
+ */
 const orangeOutlined = viewer.entities.add({
   name: "Orange line with black outline at height and following the surface",
   polyline: {
