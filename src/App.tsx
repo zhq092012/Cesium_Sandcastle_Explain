@@ -10,7 +10,9 @@ import {
   Save, 
   RefreshCw, 
   ExternalLink, 
-  FileText 
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import './App.css';
 
@@ -25,11 +27,26 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [selectedExample, setSelectedExample] = useState<Example | null>(null);
   
+  // Sidebar toggle state
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  
   // Settings & Tokens
   const [cesiumToken, setCesiumToken] = useState<string>(() => {
     return localStorage.getItem('cesium_ion_token') || '';
   });
   const [showTokenPanel, setShowTokenPanel] = useState(false);
+
+  // Toggle sidebar via keyboard shortcut (Ctrl+B / Cmd+B)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        setIsSidebarCollapsed(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Search & Navigation
   const [searchQuery, setSearchQuery] = useState('');
@@ -287,7 +304,7 @@ export default function App() {
   return (
     <div className="app-container">
       {/* Sidebar Panel */}
-      <aside className="sidebar">
+      <aside className={`sidebar ${isSidebarCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-header">
           <div className="brand">
             <Globe size={24} className="brand-icon" />
@@ -359,6 +376,14 @@ export default function App() {
           )}
         </div>
       </aside>
+
+      <button 
+        className={`sidebar-toggle-btn ${isSidebarCollapsed ? 'collapsed' : ''}`}
+        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        title={isSidebarCollapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+      >
+        {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+      </button>
 
       {/* Main Workspace Panels */}
       {selectedExample ? (
