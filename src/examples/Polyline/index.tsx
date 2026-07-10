@@ -51,8 +51,9 @@ export default function Polyline() {
     });
 
     /**
-     * 标题：发光蓝线 (Glowing blue line on the surface)
-     * 描述：带有霓虹发光特效的线条，使用 PolylineGlowMaterialProperty 材质，支持通过 glowPower 控制发光强度，taperPower 控制末端渐变渐细。
+     * 标题：发光蓝白线 (Glowing blue line on the surface)
+     * 描述：带有霓虹发光特效的线条，使用 PolylineGlowMaterialProperty 材质，支持通过 glowPower 控制发光强度
+     * taperPower 控制末端渐变渐细。
      * Tips：常用于科技感 UI、城市管网、交通流向或重点强调的路线。
      */
     viewer.entities.add({
@@ -70,7 +71,8 @@ export default function Polyline() {
 
     /**
      * 标题：带轮廓的橘色弯曲空间线 (Orange line with black outline at height and following the surface)
-     * 描述：具有黑色外轮廓的橘色线条，使用 PolylineOutlineMaterialProperty 材质，且由于指定了高度（250,000米）且未设置 clampToGround，它会在高空沿着地球表面弯曲（大圆航线）。
+     * 描述：具有黑色外轮廓的橘色线条，使用 PolylineOutlineMaterialProperty 材质
+     * 且由于指定了高度（250,000米）且未设置 clampToGround，它会在高空沿着地球表面弯曲（大圆航线）。
      * Tips：外轮廓能有效在复杂背景（如卫星影像）下提高线条的对比度与可读性。
      */
     viewer.entities.add({
@@ -90,7 +92,9 @@ export default function Polyline() {
 
     /**
      * 标题：带箭头的紫色空间直航线 (Purple straight arrow at height)
-     * 描述：带方向箭头的线条，使用 PolylineArrowMaterialProperty 材质，并通过设置 arcType: Cesium.ArcType.NONE 使其在三维空间中呈绝对的几何直线（穿过地球内部的空间直航线，不随地球表面弯曲）。
+     * 描述：带方向箭头的线条，使用 PolylineArrowMaterialProperty 材质
+     * 并通过设置 arcType: Cesium.ArcType.NONE 使其在三维空间中呈绝对的几何直线
+     * （穿过地球内部的空间直航线，不随地球表面弯曲）。
      * Tips：非常适合用于表示流向、向量、航路、或者有明确方向指示的空间路径。
      */
     viewer.entities.add({
