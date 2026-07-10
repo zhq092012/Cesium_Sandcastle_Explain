@@ -440,6 +440,9 @@ export default function App() {
                     minimap: { enabled: false },
                     automaticLayout: true,
                     tabSize: 2,
+                    guides: {
+                      indentation: false,
+                    },
                     scrollbar: {
                       vertical: 'visible',
                       horizontal: 'visible',
