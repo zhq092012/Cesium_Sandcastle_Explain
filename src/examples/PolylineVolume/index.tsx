@@ -34,10 +34,10 @@ export default function PolylineVolume() {
         const radians = Cesium.Math.toRadians(i);
         positions.push(
           new Cesium.Cartesian2(
-            radius * Math.cos(radians),//x轴坐标
-            radius * Math.sin(radians),//y轴坐标
+            radius * Math.cos(radians),
+            radius * Math.sin(radians),
           ),
-        );//z轴坐标默认是0
+        );
       }
       return positions;
     }
@@ -59,10 +59,10 @@ export default function PolylineVolume() {
       for (let i = 0; i < length; i++) {
         const r = i % 2 === 0 ? rOuter : rInner;
         positions[i] = new Cesium.Cartesian2(
-          Math.cos(i * angle) * r,//x轴坐标
-          Math.sin(i * angle) * r,//y轴坐标
+          Math.cos(i * angle) * r,
+          Math.sin(i * angle) * r,
         );
-      }//z轴坐标默认是0
+      }
       return positions;
     }
     /**
