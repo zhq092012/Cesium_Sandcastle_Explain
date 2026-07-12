@@ -16,6 +16,41 @@ import {
 } from 'lucide-react';
 import './App.css';
 
+const sandcastleTypes = `
+declare module 'Sandcastle' {
+  export interface SandcastleMenuOption {
+    text: string;
+    onselect: () => void;
+  }
+  export interface Sandcastle {
+    reset(): void;
+    addHeader(text: string): void;
+    addToolbarButton(text: string, onclick: () => void): void;
+    addToggleButton(text: string, checked: boolean, onchange: (checked: boolean) => void): void;
+    addToolbarMenu(options: SandcastleMenuOption[], title?: string): void;
+    addSlider(label: string, min: number, max: number, step: number, value: number, oninput: (val: number) => void): void;
+  }
+  const SandcastleInstance: Sandcastle;
+  export default SandcastleInstance;
+}
+`;
+
+const reactTypes = `
+declare module 'react' {
+  export function useEffect(effect: () => void | (() => void | undefined), deps?: any[]): void;
+  export function useRef<T>(initialValue: T | null): { current: T | null };
+  export function useState<T>(initialValue: T | (() => T)): [T, (newValue: T | ((prev: T) => T)) => void];
+  const React: any;
+  export default React;
+}
+
+declare module 'react/jsx-runtime' {
+  export const jsx: any;
+  export const jsxs: any;
+  export const Fragment: any;
+}
+`;
+
 interface Example {
   name: string;
   code: string;
@@ -87,9 +122,7 @@ export default function App() {
       module: (monaco as any).languages.typescript.ModuleKind.CommonJS,
       noEmit: true,
       typeRoots: ["node_modules/@types"],
-      jsx: (monaco as any).languages.typescript.JsxEmit.React,
-      jsxFactory: 'React.createElement',
-      reactNamespace: 'React',
+      jsx: (monaco as any).languages.typescript.JsxEmit.ReactJSX || 4,
       allowJs: true,
     });
 
@@ -99,8 +132,22 @@ export default function App() {
       'file:///node_modules/cesium/index.d.ts'
     );
 
+    // Add extra lib so Monaco resolves module 'Sandcastle' imports correctly
+    const disposableSandcastle = tsDefaults.addExtraLib(
+      sandcastleTypes,
+      'file:///node_modules/Sandcastle/index.d.ts'
+    );
+
+    // Add extra lib so Monaco resolves module 'react' and 'react/jsx-runtime' imports correctly
+    const disposableReact = tsDefaults.addExtraLib(
+      reactTypes,
+      'file:///node_modules/react/index.d.ts'
+    );
+
     return () => {
       disposable.dispose();
+      disposableSandcastle.dispose();
+      disposableReact.dispose();
     };
   }, [monaco, cesiumTypes]);
 
@@ -430,6 +477,7 @@ export default function App() {
                 <Editor
                   height="100%"
                   language="typescript"
+                  path={`file:///src/examples/${selectedExample.name}/index.tsx`}
                   theme="vs-dark"
                   value={draftCode}
                   onChange={(val) => setDraftCode(val || '')}

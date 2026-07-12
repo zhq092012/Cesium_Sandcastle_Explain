@@ -1,0 +1,242 @@
+/* Sandcastle Floating Toolbar CSS */
+.sandcastle-toolbar {
+  position: absolute;
+  top: 15px;
+  left: 15px;
+  background-color: rgba(30, 32, 34, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 16px;
+  color: #e8eaed;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 280px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+  max-height: calc(100% - 30px);
+  overflow-y: auto;
+  pointer-events: auto;
+  user-select: none;
+}
+
+/* Custom Scrollbar for Toolbar */
+.sandcastle-toolbar::-webkit-scrollbar {
+  width: 5px;
+}
+.sandcastle-toolbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sandcastle-toolbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+.sandcastle-toolbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Headers */
+.sandcastle-header {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-top: 8px;
+  margin-bottom: 2px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.sandcastle-header:first-child {
+  margin-top: 0;
+}
+
+/* Action Buttons */
+.sandcastle-button {
+  width: 100%;
+  background-color: #303134;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e8eaed;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+  outline: none;
+}
+.sandcastle-button:hover {
+  background-color: #3c4043;
+  border-color: #8ab4f8;
+  color: #ffffff;
+}
+.sandcastle-button:active {
+  background-color: #202124;
+}
+
+/* Toggle Switches */
+.sandcastle-toggle-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.sandcastle-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.sandcastle-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.sandcastle-toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.15);
+  transition: 0.25s;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sandcastle-toggle-slider::before {
+  position: absolute;
+  content: "";
+  height: 14px;
+  width: 14px;
+  left: 3px;
+  bottom: 3px;
+  background-color: #ffffff;
+  transition: 0.25s;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.sandcastle-toggle-switch input:checked + .sandcastle-toggle-slider {
+  background-color: #398b77; /* Cesium Green/Teal switch track */
+}
+
+.sandcastle-toggle-switch input:checked + .sandcastle-toggle-slider::before {
+  transform: translateX(18px);
+}
+
+.sandcastle-toggle-label {
+  color: #e8eaed;
+  font-size: 13px;
+  line-height: 22px;
+}
+
+/* Dropdown Menus */
+.sandcastle-menu-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  width: 100%;
+}
+
+.sandcastle-menu-label {
+  color: #e8eaed;
+  font-size: 13px;
+  flex-grow: 1;
+}
+
+.sandcastle-select {
+  background-color: #303134;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 4px 28px 4px 8px;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  min-width: 120px;
+  max-width: 160px;
+  transition: border-color 0.2s, background-color 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
+}
+
+.sandcastle-select:hover {
+  border-color: #8ab4f8;
+  background-color: #3c4043;
+}
+
+.sandcastle-select option {
+  background-color: #303134;
+  color: #ffffff;
+}
+
+/* Sliders with Editable Inputs */
+.sandcastle-slider-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+  width: 100%;
+}
+
+.sandcastle-slider-label {
+  color: #e8eaed;
+  font-size: 13px;
+  width: 60px;
+  flex-shrink: 0;
+}
+
+.sandcastle-range {
+  flex-grow: 1;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.sandcastle-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #c4c7c5;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sandcastle-range::-webkit-slider-thumb:hover {
+  background: #ffffff;
+}
+
+.sandcastle-slider-input {
+  width: 52px;
+  background-color: rgba(30, 32, 34, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.sandcastle-slider-input:focus {
+  border-color: #8ab4f8;
+}

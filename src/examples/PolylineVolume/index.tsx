@@ -28,8 +28,8 @@ export default function PolylineVolume() {
      * @param radius 半径
      * @returns 存储 Cartesian2 对象的数组，表示圆的顶点。
      */
-    function computeCircle(radius) {
-      const positions = [];
+    function computeCircle(radius: number) {
+      const positions: Cesium.Cartesian2[] = [];
       for (let i = 0; i < 360; i++) {
         const radians = Cesium.Math.toRadians(i);
         positions.push(
@@ -52,7 +52,7 @@ export default function PolylineVolume() {
      * @param rInner 星形内径
      * @returns 存储 Cartesian2 对象的数组，表示星形的顶点。
      */
-    function computeStar(arms, rOuter, rInner) {
+    function computeStar(arms: number, rOuter: number, rInner: number) {
       const angle = Math.PI / arms;
       const length = 2 * arms;
       const positions = new Array(length);

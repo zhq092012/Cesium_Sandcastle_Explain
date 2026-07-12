@@ -14,6 +14,11 @@ function getRequestBody(req: any): Promise<string> {
 }
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      Sandcastle: path.resolve(__dirname, 'src/Sandcastle.ts')
+    }
+  },
   plugins: [
     react(),
     (cesium as any)(),
