@@ -8,7 +8,9 @@ export interface SandcastleMenuOption {
 class SandcastleClass {
   private container: HTMLDivElement | null = null;
 
-  // Initialize the toolbar container if it does not exist
+  /**
+   * 初始化工具栏容器
+   */
   private initContainer() {
     if (this.container) return;
 
@@ -24,8 +26,8 @@ class SandcastleClass {
   }
 
   /**
-   * Clears all elements from the toolbar and removes the container from the DOM.
-   * Call this inside React's useEffect cleanup function.
+   * 清楚工具栏中的所有元素并从 DOM 中移除容器。
+   * 请在 React 的 useEffect 清理函数中调用此方法。
    */
   reset() {
     if (this.container) {

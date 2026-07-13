@@ -166,11 +166,11 @@ export default function ParallelsAndMeridians() {
      * @param cartographic Cesium.Cartographic 地理坐标对象（经纬度为弧度制）
      * @returns Cesium.Entity 实体对象，包含标签信息
      */
-    function labelCoordinates(cartographic) {
+    function labelCoordinates(cartographic: Cesium.Cartographic) {
       const position = Cesium.Cartographic.toCartesian(cartographic);
-      const latitude = toDegrees(cartographic.latitude).toFixed(4);
+      const latitude = toDegrees(cartographic.latitude).toFixed(4); //将弧度转化成度
       const longitude = toDegrees(cartographic.longitude).toFixed(4);
-      const label = `lat: ${latitude}°\nlon: ${longitude}°`;
+      const label = `纬度: ${latitude}°\n经度: ${longitude}°`;
 
       return viewer.entities.add({
         position: position,
@@ -212,7 +212,12 @@ export default function ParallelsAndMeridians() {
      * @param show 是否初始显示网格，true 显示，false 隐藏
      * @returns Cesium.Entity[] 所有网格线实体的数组
      */
-    function makeGrid(numberOfDivisions, color, show) {
+    function makeGrid(
+      numberOfDivisions: number,
+      color: Cesium.Color,
+      show: boolean,
+    ) {
+      // 生成纬线
       const parallels = makeParallelsRecursive(
         -90,
         90,
@@ -266,24 +271,34 @@ export default function ParallelsAndMeridians() {
      * @param color 纬线颜色
      * @returns Cesium.Entity[] 按从南到北顺序排列的纬线实体数组
      */
-    function makeParallelsRecursive(minLatitude, maxLatitude, depth, color) {
-      let result = [];
+    function makeParallelsRecursive(
+      minLatitude: number,
+      maxLatitude: number,
+      depth: number,
+      color: Cesium.Color,
+    ) {
+      let result = []; //每次递归都会创建属于自己的局部变量result
       const midpoint = (minLatitude + maxLatitude) / 2;
-      result.push(parallel(midpoint, color));
+      result.push(parallel(midpoint, color)); //当前范围的中间纬线
 
       if (depth > 0) {
+        // 获得南半部分纬线（递归调用）
         const southernLines = makeParallelsRecursive(
           minLatitude,
           midpoint,
           depth - 1,
           color,
         );
+
+        // 获得北半部分纬线（递归调用）
         const northernLines = makeParallelsRecursive(
           midpoint,
           maxLatitude,
           depth - 1,
           color,
         );
+        //但对当前的父调用来说，子递归产生的线在返回之前只存在于子函数的内部。
+        // 父函数必须通过 southernLines.concat(result, northernLines)，才能把子函数返回出来的数组与自己持有的中点线拼
         result = southernLines.concat(result, northernLines);
       }
 
@@ -345,22 +360,26 @@ export default function ParallelsAndMeridians() {
       return result;
     }
 
+    // 是否显示对跖点
     let showAntipodalPoint = false;
+    //定义网格、赤道、经线、十字准线等实体
     const primitives = {
-      equator: parallel(0, Cesium.Color.BLUE),
-      primeMeridian: meridian(0, Cesium.Color.BLUE),
+      equator: parallel(0, Cesium.Color.BLUE), //赤道
+      primeMeridian: meridian(0, Cesium.Color.BLUE), //本初子午线
+      //选中的点（红色）
       selectedPoint: {
         meridian: undefined,
         parallel: undefined,
         label: undefined,
       },
+      //对跖点（青色）
       antipodalPoint: {
         meridian: undefined,
         parallel: undefined,
         label: undefined,
       },
-      lowResolutionGrid: makeGrid(2, Cesium.Color.PALEGREEN, false),
-      higherResolutionGrid: makeGrid(5, Cesium.Color.DARKORANGE, false),
+      lowResolutionGrid: makeGrid(2, Cesium.Color.PALEGREEN, false), //低分辨率网格
+      higherResolutionGrid: makeGrid(5, Cesium.Color.DARKORANGE, false), //高分辨率网格
     };
 
     /**
@@ -401,9 +420,11 @@ export default function ParallelsAndMeridians() {
      * @param cartographic Cesium.Cartographic 地理坐标对象（用户点击位置）
      * @returns void
      */
-    function updateCrosshairs(cartographic) {
+    function updateCrosshairs(cartographic: Cesium.Cartographic) {
       const selectedPoint = primitives.selectedPoint;
       const antipodalPoint = primitives.antipodalPoint;
+
+      //1.先清除上一次的十字准线（如果存在），避免残留
       if (Cesium.defined(selectedPoint.parallel)) {
         viewer.entities.remove(selectedPoint.parallel);
         viewer.entities.remove(selectedPoint.meridian);
@@ -414,13 +435,16 @@ export default function ParallelsAndMeridians() {
       }
 
       const pointLatitude = toDegrees(cartographic.latitude);
-      const antipodeLatitude = -pointLatitude;
+      const antipodeLatitude = -pointLatitude; //对跖点纬度 = -原纬度（南北对称）
 
       const pointLongitude = toDegrees(cartographic.longitude);
-      const antipodeLongitude = (pointLongitude + 180) % 360;
+      const antipodeLongitude = (pointLongitude + 180) % 360; //对跖点经度 = (原经度 + 180) % 360（东西对称）
 
-      // Increase the granularity to improve accuracy when zoomed in
-      const finerGranularity = 0.001;
+      //2. 在点击位置绘制红色（RED）十字准线：
+      //   - 过该点的纬线（水平线）
+      //   - 过该点的经线（垂直线）
+      //   - 坐标标签
+      const finerGranularity = 0.001; // 插值密度
       const red = Cesium.Color.RED;
       selectedPoint.parallel = parallel(
         toDegrees(cartographic.latitude),
@@ -440,6 +464,9 @@ export default function ParallelsAndMeridians() {
         antipodeLatitude,
         0,
       );
+      //3. 计算并绘制青色（CYAN）对跖点十字准线：
+      //   - 对跖点纬度 = -原纬度（南北对称）
+      //   - 对跖点经度 = (原经度 + 180) % 360（东西对称）
       antipodalPoint.parallel = parallel(
         antipodeLatitude,
         cyan,
@@ -452,68 +479,59 @@ export default function ParallelsAndMeridians() {
       );
       antipodalPoint.label = labelCoordinates(antipode);
 
+      //控制对跖点十字准线的显示/隐藏
       antipodalPoint.parallel.show = showAntipodalPoint;
       antipodalPoint.meridian.show = showAntipodalPoint;
       antipodalPoint.label.show = showAntipodalPoint;
     }
 
-    // Click to shift the cross-hairs
-    viewer.screenSpaceEventHandler.setInputAction(function (mouse) {
-      viewer.scene.pick(mouse.position);
-      const ray = viewer.camera.getPickRay(mouse.position);
-      const globe = viewer.scene.globe;
-      const cartesian = globe.pick(ray, viewer.scene);
+    // 响应鼠标左键点击事件，更新十字准线
+    viewer.screenSpaceEventHandler.setInputAction(function (mouse: {
+      position: Cesium.Cartesian2;
+    }) {
+      viewer.scene.pick(mouse.position); // 在场景中拾取
+      const ray = viewer.camera.getPickRay(mouse.position); // 获取从相机到鼠标位置的射线
+      const globe = viewer.scene.globe; //地球
+      const cartesian = globe.pick(ray, viewer.scene); // 拾取射线与地球的交点
 
       if (!Cesium.defined(cartesian)) {
         return;
       }
 
-      const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
-      updateCrosshairs(cartographic);
+      const cartographic = Cesium.Cartographic.fromCartesian(cartesian); // 笛卡尔坐标转换为地理坐标
+      updateCrosshairs(cartographic); // 更新十字准线
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-    Sandcastle.addToggleButton("Show equator", true, function (checked) {
+    Sandcastle.addToggleButton("显示赤道", true, function (checked) {
       primitives.equator.show = checked;
     });
 
-    Sandcastle.addToggleButton("Show prime meridian", true, function (checked) {
+    Sandcastle.addToggleButton("显示本初子午线", true, function (checked) {
       primitives.primeMeridian.show = checked;
     });
 
-    Sandcastle.addToggleButton(
-      "Show low-resolution grid",
-      false,
-      function (checked) {
-        primitives.lowResolutionGrid.forEach(function (line) {
-          line.show = checked;
-        });
-      },
-    );
+    Sandcastle.addToggleButton("显示低分辨率网格", false, function (checked) {
+      primitives.lowResolutionGrid.forEach(function (line) {
+        line.show = checked;
+      });
+    });
 
-    Sandcastle.addToggleButton(
-      "Show higher-resolution grid",
-      false,
-      function (checked) {
-        primitives.higherResolutionGrid.forEach(function (line) {
-          line.show = checked;
-        });
-      },
-    );
+    Sandcastle.addToggleButton("显示高分辨率网格", false, function (checked) {
+      primitives.higherResolutionGrid.forEach(function (line) {
+        line.show = checked;
+      });
+    });
 
-    Sandcastle.addToggleButton(
-      "Show antipodal point",
-      false,
-      function (checked) {
-        showAntipodalPoint = checked;
-        const antipodalPoint = primitives.antipodalPoint;
+    Sandcastle.addToggleButton("显示对跖点", false, function (checked) {
+      showAntipodalPoint = checked;
+      const antipodalPoint = primitives.antipodalPoint;
 
-        if (Cesium.defined(antipodalPoint.parallel)) {
-          antipodalPoint.parallel.show = showAntipodalPoint;
-          antipodalPoint.meridian.show = showAntipodalPoint;
-          antipodalPoint.label.show = showAntipodalPoint;
-        }
-      },
-    );
+      if (Cesium.defined(antipodalPoint.parallel)) {
+        antipodalPoint.parallel.show = showAntipodalPoint;
+        antipodalPoint.meridian.show = showAntipodalPoint;
+        antipodalPoint.label.show = showAntipodalPoint;
+      }
+    });
 
     return () => {
       Sandcastle.reset();
