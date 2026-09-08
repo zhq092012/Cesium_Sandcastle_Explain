@@ -549,6 +549,7 @@ export default function App() {
                 src={`/preview/${selectedExample.name}`}
                 className="preview-iframe"
                 title="Cesium Live Preview"
+                onLoad={sendTokenToIframe}
               />
             </div>
           </section>

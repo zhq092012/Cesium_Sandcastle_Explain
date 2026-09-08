@@ -44,24 +44,51 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
+/**
+ * Applies a Cesium ion access token without wiping Cesium's bundled default.
+ * An empty string from the parent (user has not pasted a token) used to replace
+ * the default token, which made `fromIonAssetId` fail for assets such as 40866.
+ *
+ * @param token - Candidate token from localStorage or the parent App iframe message.
+ */
+function applyIonAccessToken(token: unknown): void {
+  if (typeof token === 'string' && token.trim().length > 0) {
+    Cesium.Ion.defaultAccessToken = token.trim();
+  }
+}
+
 export default function Preview() {
   const [exampleName, setExampleName] = useState<string>('');
   const [Comp, setComp] = useState<React.ComponentType | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  /** True after the ion token handshake (or timeout) so Ion requests do not race the parent message. */
+  const [ionReady, setIonReady] = useState(false);
 
   useEffect(() => {
-    // Inject custom cesium token from parent window if available
+    // Same-origin preview iframe shares localStorage with the App — apply it before any Viewer/Ion call.
+    applyIonAccessToken(localStorage.getItem('cesium_ion_token'));
+
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'SET_CESIUM_TOKEN') {
-        Cesium.Ion.defaultAccessToken = event.data.token;
+        applyIonAccessToken(event.data.token);
+        setIonReady(true);
       }
     };
     window.addEventListener('message', handleMessage);
-    
-    // Ask parent window for token
-    if (window.parent) {
+
+    const runningInIframe = window.parent != null && window.parent !== window;
+    if (runningInIframe) {
       window.parent.postMessage({ type: 'GET_CESIUM_TOKEN' }, '*');
+    } else {
+      setIonReady(true);
     }
+
+    // Iframe waits for the parent SET_CESIUM_TOKEN handshake. A short timeout
+    // used to mark ready first and start fromIonAssetId with Cesium's default
+    // token, which cannot read account assets such as Melbourne 69380.
+    const readyTimeout = window.setTimeout(() => {
+      setIonReady(true);
+    }, runningInIframe ? 2500 : 0);
 
     const path = window.location.pathname;
     const name = path.replace('/preview/', '');
@@ -83,6 +110,7 @@ export default function Preview() {
 
     return () => {
       window.removeEventListener('message', handleMessage);
+      window.clearTimeout(readyTimeout);
     };
   }, []);
 
@@ -103,7 +131,7 @@ export default function Preview() {
     );
   }
 
-  if (!Comp) {
+  if (!Comp || !ionReady) {
     return (
       <div style={{
         display: 'flex',
