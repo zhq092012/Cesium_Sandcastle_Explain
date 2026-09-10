@@ -83,18 +83,28 @@ export default function Clamp_Model_to_Ground() {
 
     /**
      * 异步加载 AGI 总部倾斜摄影瓦片集。
-     * 先尝试公共画廊资产 40866，失败后回退到当前账号的 355558。
+     * 先尝试公共画廊资产 40866（与官方 Sandcastle 一致），
+     * 失败后回退到当前账号的个人资产 355558。
      * 官方 Sandcastle 在加载完成后不对瓦片集做任何矩阵变换。
      *
      * @returns 加载成功的瓦片集实例；若两个 Ion ID 均失败则返回 `undefined`。
      */
     const loadTileset = async (): Promise<Cesium.Cesium3DTileset | undefined> => {
+      // 先尝试官方公共资产 40866（AGI 总部倾斜摄影，无需特殊权限）
       try {
-        return await Cesium.Cesium3DTileset.fromIonAssetId(ACCOUNT_AGI_HQ_ASSET_ID, {
+        return await Cesium.Cesium3DTileset.fromIonAssetId(40866, {
           enableCollision: true, // 开启碰撞检测，使贴地计算更精确
         });
       } catch (error) {
-        console.log(`Error loading tileset 355558: ${error}`);
+        console.log(`Error loading public tileset 40866: ${error}`);
+      }
+      // 回退到当前账号的个人资产 355558
+      try {
+        return await Cesium.Cesium3DTileset.fromIonAssetId(ACCOUNT_AGI_HQ_ASSET_ID, {
+          enableCollision: true,
+        });
+      } catch (error) {
+        console.log(`Error loading account tileset ${ACCOUNT_AGI_HQ_ASSET_ID}: ${error}`);
       }
       return undefined;
     };
@@ -253,7 +263,7 @@ export default function Clamp_Model_to_Ground() {
           },
         },
         {
-          text: 'No clamping',            // 不贴地，模型浮空（使用无人机模型）
+          text: 'No clamping',            // 不贴地，模型浮空（使用无人机模型）绝对高度
           onselect: () => {
             applyClampingMode(
               DRONE_MODEL_URL,
