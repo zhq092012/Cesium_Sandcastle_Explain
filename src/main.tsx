@@ -3,6 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 import Preview from './Preview.tsx'
+import { initCesiumIonToken } from './cesiumIon'
+
+// 项目启动时从 localStorage 或 .env（VITE_CESIUM_TOKEN）注入 ion token
+initCesiumIonToken()
 
 // Cesium 在 viewer.destroy() 时会产生内部 cancelation rejection，
 // React StrictMode 的 double-mount 会触发这个问题，这里全局过滤掉

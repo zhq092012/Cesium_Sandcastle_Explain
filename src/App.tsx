@@ -1,3 +1,4 @@
+import './monacoSetup';
 import { useState, useEffect, useRef } from 'react';
 import Editor, { useMonaco } from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
@@ -15,6 +16,11 @@ import {
   ChevronRight
 } from 'lucide-react';
 import './App.css';
+import {
+  checkCesiumIonConnectivity,
+  getCesiumIonToken,
+  CESIUM_ION_TOKEN_STORAGE_KEY,
+} from './cesiumIon';
 
 const sandcastleTypes = `
 declare module 'Sandcastle' {
@@ -66,10 +72,10 @@ export default function App() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
   // Settings & Tokens
-  const [cesiumToken, setCesiumToken] = useState<string>(() => {
-    return localStorage.getItem('cesium_ion_token') || '';
-  });
+  const [cesiumToken, setCesiumToken] = useState<string>(() => getCesiumIonToken());
   const [showTokenPanel, setShowTokenPanel] = useState(false);
+  /** `false` 表示无法连接 api.cesium.com（常见于国内网络或代理未配置）。 */
+  const [ionReachable, setIonReachable] = useState<boolean | null>(null);
 
   // Toggle sidebar via keyboard shortcut (Ctrl+B / Cmd+B)
   useEffect(() => {
@@ -198,6 +204,19 @@ export default function App() {
     fetchCesiumTypes();
   }, []);
 
+  // 启动时检测 Cesium ion API 是否可达，便于提示网络问题
+  useEffect(() => {
+    let cancelled = false;
+    checkCesiumIonConnectivity().then((reachable) => {
+      if (!cancelled) {
+        setIonReachable(reachable);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [cesiumToken]);
+
   // Listen to messages from the preview iframe requesting the Cesium token
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -222,7 +241,7 @@ export default function App() {
   // Keep localStorage and iframe updated when token changes
   const handleTokenChange = (val: string) => {
     setCesiumToken(val);
-    localStorage.setItem('cesium_ion_token', val);
+    localStorage.setItem(CESIUM_ION_TOKEN_STORAGE_KEY, val);
     setTimeout(() => {
       sendTokenToIframe();
       // Reload iframe to apply new token
@@ -375,6 +394,17 @@ export default function App() {
                 value={cesiumToken}
                 onChange={(e) => handleTokenChange(e.target.value)}
               />
+            </div>
+          )}
+
+          {ionReachable === false && (
+            <div className="ion-network-warning">
+              无法连接 <code>api.cesium.com</code>，Ion 地形与 3D Tiles 将无法加载。
+              请检查网络、代理/VPN，或在{' '}
+              <a href="https://cesium.com/ion/tokens" target="_blank" rel="noreferrer">
+                Cesium Ion
+              </a>{' '}
+              申请有效 Token 后重试。
             </div>
           )}
         </div>

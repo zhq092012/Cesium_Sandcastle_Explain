@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from 'react';
-import * as Cesium from 'cesium';
+import { applyCesiumIonToken } from './cesiumIon';
 
 // Error Boundary for trapping runtime errors in the cesium examples
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error: Error | null }> {
@@ -44,19 +44,6 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
   }
 }
 
-/**
- * Applies a Cesium ion access token without wiping Cesium's bundled default.
- * An empty string from the parent (user has not pasted a token) used to replace
- * the default token, which made `fromIonAssetId` fail for assets such as 40866.
- *
- * @param token - Candidate token from localStorage or the parent App iframe message.
- */
-function applyIonAccessToken(token: unknown): void {
-  if (typeof token === 'string' && token.trim().length > 0) {
-    Cesium.Ion.defaultAccessToken = token.trim();
-  }
-}
-
 export default function Preview() {
   const [exampleName, setExampleName] = useState<string>('');
   const [Comp, setComp] = useState<React.ComponentType | null>(null);
@@ -65,12 +52,14 @@ export default function Preview() {
   const [ionReady, setIonReady] = useState(false);
 
   useEffect(() => {
-    // Same-origin preview iframe shares localStorage with the App — apply it before any Viewer/Ion call.
-    applyIonAccessToken(localStorage.getItem('cesium_ion_token'));
+    // 在创建 Viewer 之前应用 token（localStorage > .env）
+    applyCesiumIonToken();
 
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'SET_CESIUM_TOKEN') {
-        applyIonAccessToken(event.data.token);
+        applyCesiumIonToken(
+          typeof event.data.token === 'string' ? event.data.token : undefined,
+        );
         setIonReady(true);
       }
     };

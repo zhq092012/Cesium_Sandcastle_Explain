@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as Cesium from 'cesium';
 import Sandcastle from 'Sandcastle';
+import { applyCesiumIonToken } from '../../cesiumIon';
 
 
 
@@ -40,11 +41,8 @@ export default function Clamp_Model_to_Ground() {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // 从 localStorage 读取用户自定义的 Ion 访问令牌，若存在则覆盖默认值
-    const storedIonToken = localStorage.getItem('cesium_ion_token');
-    if (storedIonToken && storedIonToken.trim().length > 0) {
-      Cesium.Ion.defaultAccessToken = storedIonToken.trim();
-    }
+    // 应用 Ion token（localStorage > .env），与 Preview 握手逻辑保持一致
+    applyCesiumIonToken();
 
     // 初始化 Cesium Viewer，开启世界地形与阴影
     const viewer = new Cesium.Viewer(containerRef.current, {
@@ -96,7 +94,10 @@ export default function Clamp_Model_to_Ground() {
           enableCollision: true, // 开启碰撞检测，使贴地计算更精确
         });
       } catch (error) {
-        console.log(`Error loading public tileset 40866: ${error}`);
+        console.warn(
+          'Error loading public tileset 40866. If you see net::ERR_CONNECTION_CLOSED, api.cesium.com may be unreachable (check VPN/proxy).',
+          error,
+        );
       }
       // 回退到当前账号的个人资产 355558
       try {
@@ -104,7 +105,10 @@ export default function Clamp_Model_to_Ground() {
           enableCollision: true,
         });
       } catch (error) {
-        console.log(`Error loading account tileset ${ACCOUNT_AGI_HQ_ASSET_ID}: ${error}`);
+        console.warn(
+          `Error loading account tileset ${ACCOUNT_AGI_HQ_ASSET_ID}. Verify your Ion token and network access to api.cesium.com.`,
+          error,
+        );
       }
       return undefined;
     };
